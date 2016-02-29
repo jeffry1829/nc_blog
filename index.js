@@ -18,11 +18,11 @@ app.get('/', function(req, res, next){
 		context = JSON.parse(data);
 	});
 	for(var key in context){
-		responseHTML += context[key]['title'];
-		responseHTML += '<br/>';
-		responseHTML += context[key]['post'];
-		responseHTML += '<br/>';
-		responseHTML += '<br/>';
+		responseHTML += '<div style="text-align:center;width:100%;height:auto;">';
+				responseHTML += '<b>' + markdown.toHTML(context[key]['title']) + '</b>';
+				responseHTML += '<p>' + markdown.toHTML(context[key]['post']) + '</p>';
+				responseHTML += '<br/>';
+		responseHTML += '</div>';
 	}
 	res.send(responseHTML);
 	next();
@@ -32,7 +32,9 @@ Server.on('ready', function(){
 	console.log('server ready');
 });
 Server.on('data', function(client, data){
-	data = data.toString().replace(/\n/g, '');
+	data = data.toString().replace(/\n$/g, '');
+	//data.replace(/(?<=[^\\])\\n(?!$)/g,'<br/>'); //js is of no positive lookbehind.
+	data = data.replace(/ \\n(?!$)/g,'  \n');
 	if(data.match(/^verify .*/g)){
 		if(data.split(' ')[1]=='mypw'){
 			verifyed.push(client);
@@ -47,6 +49,7 @@ Server.on('data', function(client, data){
 			case 'title':
 				currentTitle = data;
 				context[currentTitle] = {};
+				context[currentTitle]['post'] = "";
 				context[currentTitle]['title'] = data;
 				statuscode = 'post';
 				Server.send(client,'please input post');
